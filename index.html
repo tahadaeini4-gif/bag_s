@@ -1857,22 +1857,15 @@ function compressImage(file) {
 }
 
 
-/* =========================================
-   ثبت سفارش
-========================================= */
-
+javascript
 async function submitOrder() {
 
-    const button = document.querySelector('#order button[onclick="submitOrder()"]');
+    const button = document.querySelector(
+        '#order button[onclick="submitOrder()"]'
+    );
 
-    const description = document.getElementById("message").value.trim();
-
-
-
-
- 
-
-
+    const description =
+        document.getElementById("message").value.trim();
 
     if (!selectedProduct || !selectedProduct.title) {
         alert("لطفاً ابتدا یک محصول انتخاب کنید.");
@@ -1880,9 +1873,10 @@ async function submitOrder() {
     }
 
     const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbwFFMOxhxFvDuTi0xI6VUZ4K3FLORVf6zosH-_SkZXBU_Z9tBD3IA96rN_mXLKSTV6Tag/exec";
+        "https://script.google.com/macros/s/AKfycbwFFMOxhxFvDuTi0xI6VUZ4K3FLORfV6zosH-_SkZXBU_Z9tBD3IA96rN_mXLKSTV6Tag/exec";
 
     const orderId = "CT-" + Date.now();
+
     const time = new Date().toLocaleString("fa-IR");
 
     try {
@@ -1893,77 +1887,181 @@ async function submitOrder() {
             button.innerHTML = "⏳ در حال ارسال...";
         }
 
+        /* =========================
+           دریافت تصویر
+        ========================= */
+
+        const imageInput =
+            document.getElementById("orderImage");
+
         let imageData = null;
 
-        if (imageInput && imageInput.files && imageInput.files[0]) {
-            imageData = await compressImage(imageInput.files[0]);
+        if (
+            imageInput &&
+            imageInput.files &&
+            imageInput.files.length > 0
+        ) {
+
+            imageData =
+                await compressImage(imageInput.files[0]);
+
         }
+
+
+        /* =========================
+           اطلاعات سفارش
+        ========================= */
 
         const orderData = {
+
             orderId: orderId,
-            name: name,
-            phone: phone,
-            username: socialId,
-            platform: platform,
-            orderType: "VPN",
+
+            orderType: "آبیاری",
+
             product: selectedProduct.title,
+
             volume: selectedProduct.volume,
+
             price: selectedProduct.price,
+
             description: description,
+
             time: time,
-            imageBase64: imageData ? imageData.base64 : "",
-            imageMimeType: imageData ? imageData.mimeType : "",
-            imageFilename: imageData ? imageData.filename : ""
+
+            imageBase64:
+                imageData
+                    ? imageData.base64
+                    : "",
+
+            imageMimeType:
+                imageData
+                    ? imageData.mimeType
+                    : "",
+
+            imageFilename:
+                imageData
+                    ? imageData.filename
+                    : ""
+
         };
 
-        const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            },
-            body: JSON.stringify(orderData)
-        });
+
+        console.log(
+            "ارسال سفارش:",
+            orderData
+        );
+
+
+        /* =========================
+           ارسال به Google Apps Script
+        ========================= */
+
+        const response = await fetch(
+            SCRIPT_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+
+                body:
+                    JSON.stringify(orderData)
+            }
+        );
+
 
         if (!response.ok) {
-            throw new Error("خطای سرور: " + response.status);
+
+            throw new Error(
+                "خطای سرور: " +
+                response.status
+            );
+
         }
 
-        const result = await response.json();
+
+        const result =
+            await response.json();
+
+
+        console.log(
+            "پاسخ سرور:",
+            result
+        );
+
 
         if (!result.success) {
-            throw new Error(result.error || "ارسال سفارش انجام نشد.");
+
+            throw new Error(
+                result.error ||
+                "ارسال سفارش انجام نشد."
+            );
+
         }
 
-        document.getElementById("name").value = "";
-        document.getElementById("phone").value = "";
-        document.getElementById("idPlatform").value = "";
-        document.getElementById("socialId").value = "";
-        document.getElementById("message").value = "";
-        document.getElementById("orderImage").value = "";
 
-        const preview = document.getElementById("imagePreview");
+        /* =========================
+           پاک کردن فرم
+        ========================= */
+
+        document.getElementById(
+            "message"
+        ).value = "";
+
+        document.getElementById(
+            "orderImage"
+        ).value = "";
+
+
+        const preview =
+            document.getElementById(
+                "imagePreview"
+            );
+
         preview.src = "";
-        preview.style.display = "none";
+
+        preview.style.display =
+            "none";
+
+
+        /* =========================
+           صفحه موفقیت
+        ========================= */
 
         showPage("success");
 
+
     } catch (error) {
 
-        console.error("ORDER ERROR:", error);
+        console.error(
+            "ORDER ERROR:",
+            error
+        );
 
         alert(
             "❌ ارسال سفارش انجام نشد.\n\n" +
-            (error.message || "خطای نامشخص")
+            (error.message ||
+            "خطای نامشخص")
         );
+
 
     } finally {
 
         if (button) {
+
             button.disabled = false;
-            button.innerHTML = button.dataset.oldText || "ثبت سفارش";
+
+            button.innerHTML =
+                button.dataset.oldText ||
+                "ثبت سفارش";
+
         }
+
     }
 }
+
 
 </script>
 
